@@ -1,0 +1,60 @@
+* 03. Setup Docker compose to make use of the NVIDIA gpu
+
+Please make sure that you've installed docker-compose before continuing.  As per the official documentation on gpu support, you'll have to install Docker Compose v1.28.0 or higher for the device structure specification in your compose files. Read more at https://docs.docker.com/compose/gpu-support/
+
+** Install docker compose via your preferred method(configuration, home-manager etc.)
+
+Check the version before you proceed.
+
+#+begin_src sh
+  > docker-compose --version
+  docker-compose version 1.28.6 ............
+#+end_src
+
+
+** Test using a sample docker-compose.yml
+
+#+begin_src yaml :tangle ./03-files/docker-compose.yml
+  services:
+    test:
+      image: nvidia/cuda:11.2.0-base-ubuntu20.04
+      command: nvidia-smi
+      deploy:
+        resources:
+          reservations:
+            devices:
+            - driver: nvidia
+              capabilities: [gpu]
+#+end_src
+
+Test the docker-compose against the above service specification.
+
+
+#+begin_src shell
+  > docker-compose up
+  Creating compose-gpu_test_1 ... done
+  Attaching to compose-gpu_test_1
+  test_1  | Sat Aug  7 14:00:39 2021
+  test_1  | +-----------------------------------------------------------------------------+
+  test_1  | | NVIDIA-SMI 460.73.01    Driver Version: 460.73.01    CUDA Version: 11.2     |
+  test_1  | |-------------------------------+----------------------+----------------------+
+  test_1  | | GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+  test_1  | | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+  test_1  | |                               |                      |               MIG M. |
+  test_1  | |===============================+======================+======================|
+  test_1  | |   0  GeForce RTX 3090    Off  | 00000000:01:00.0  On |                  N/A |
+  test_1  | |  0%   50C    P8    42W / 370W |    689MiB / 24265MiB |      2%      Default |
+  test_1  | |                               |                      |                  N/A |
+  test_1  | +-------------------------------+----------------------+----------------------+
+  test_1  |
+  test_1  | +-----------------------------------------------------------------------------+
+  test_1  | | Processes:                                                                  |
+  test_1  | |  GPU   GI   CI        PID   Type   Process name                  GPU Memory |
+  test_1  | |        ID   ID                                                   Usage      |
+  test_1  | |=============================================================================|
+  test_1  | +-----------------------------------------------------------------------------+
+  compose-gpu_test_1 exited with code 0
+#+end_src
+
+
+At this point, you now should be able to build your images with the libraries as needed. Make sure that you always match the CUDA versions for less surprises, both in the images as well as the libraries.
