@@ -1,0 +1,98 @@
+* 02. Setup NixOS to use Docker with NVIDIA Container toolkit support
+
+This step is also fairly straightforward. During the time of this writing, NVIDIA container toolkit does not support v2 cgroups, so Nixos will have to be configured to use the previous version.
+
+** Use Docker with NVIDIA container toolkit support
+
+As previously mentioned, the configuration for docker is in a separate file as below.
+
+#+begin_src nix :tangle ./02-files/docker.nix
+  { config, lib, pkgs, ... }:
+
+  {
+    virtualisation.docker.enable = true;
+    virtualisation.docker.enableOnBoot = true;
+
+    # Nvidia Docker
+    virtualisation.docker.enableNvidia = true;
+    # libnvidia-container does not support cgroups v2
+    # https://github.com/NVIDIA/nvidia-docker/issues/1447
+    systemd.enableUnifiedCgroupHierarchy = false;
+  }
+#+end_src
+
+Include the gpu config in the main configuration
+
+#+begin_src nix :tangle ./02-files/configuration.nix
+  { config, lib, pkgs, ... }:
+
+  {
+    imports = [
+      ./hardware-configuration.nix
+
+      .
+      .
+
+      # virtualisation
+      ./docker.nix
+
+      .
+      .
+
+    ];
+
+  .
+  .
+  .
+#+end_src
+
+Rebuild the nixos configuration and run tests as mentioned below.
+
+** Test that the docker nvidia integration works
+
+Having made a note of the CUDA version running on your NixOS host, get an image from docker hub with a matching CUDA version.
+
+If there's no exact match, you can try to get an image that has a slightly older minor version, but not the major one. For eg. if you have CUDA 11.2 on your NixOS host, getting an image with CUDA 11.1 should be compatible. Always match the CUDA major version, and get the least old minor version image.
+
+Note that you will not be able to see all the pids as you could on the host, unless you use the --pid=host flag.
+
+#+begin_src shell
+  > docker run --rm --gpus all nvidia/cuda:11.2.0-base-ubuntu20.04 nvidia-smi
+  Sat Aug  7 13:31:51 2021
+  +-----------------------------------------------------------------------------+
+  | NVIDIA-SMI 460.73.01    Driver Version: 460.73.01    CUDA Version: 11.2     |
+  |-------------------------------+----------------------+----------------------+
+  | GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+  | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+  |                               |                      |               MIG M. |
+  |===============================+======================+======================|
+  |   0  GeForce RTX 3090    Off  | 00000000:01:00.0  On |                  N/A |
+  |  0%   49C    P8    42W / 370W |    655MiB / 24265MiB |      3%      Default |
+  |                               |                      |                  N/A |
+  +-------------------------------+----------------------+----------------------+
+
+  +-----------------------------------------------------------------------------+
+  | Processes:                                                                  |
+  |  GPU   GI   CI        PID   Type   Process name                  GPU Memory |
+  |        ID   ID                                                   Usage      |
+  |=============================================================================|
+  +-----------------------------------------------------------------------------+
+#+end_src
+
+** Optionally, run the gpu-burn CUDA stress test
+
+Please read the documentation at http://wili.cc/blog/gpu-burn.html, before you continue this stress test.
+
+#+begin_src shell
+  git clone https://github.com/wilicc/gpu-burn.git
+  cd gpu-burn
+  make image
+
+  # Run the default stress test as packages in the image
+  docker run --rm --gpus all gpu-burn
+
+  # For custom parameters get a shell on the image and run the test as you please
+  # Please read the documentation before you run long difficult stress tests
+  docker run --rm --gpus all -it gpu-burn /bin/bash
+  ./gpu-burn --help
+#+end_src
