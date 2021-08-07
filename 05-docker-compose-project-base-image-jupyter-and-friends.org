@@ -1,0 +1,305 @@
+* 05. Prepare a compose project with the base image & jupyter with other libraries
+
+Now that you have prepare a separate base image in the previous step with the Python runtime and base libraries, it can be used in a docker compose project.
+
+We will walk through an example project here, setting up a Jupyter project along with some additional libraries.
+
+Similar to the previous step, the project files have been made available in the 05-files directory. Make sure that you are matching the CUDA version on your host OS and base images.
+
+** Copy over the contents of the 05-files (generated from below) and make updates as needed
+
+In the compose file, we mount some volumes to be able to cache downloads from certain libraries such as HuggingFace, Fastai etc. Please make sure that these mount points exist, or change them accordingly.
+
+In the Dockerfile, FIX the image tag (SHA) as generated on your machine.
+
+In the requirements.txt, we add the libraries that we'd like to use; jupyter, transformers etc.
+
+We use a custom entrypoint as well, so that we can use drop root credentials and use the correct uid:gid when starting out the jupyter process within the container. This ensures that files will be read and written correctly with the host uid:gid and is handled by the Makefile.
+
+Finally, we setup the JupyterLab to run on port 8989 (bind to same host port in compose.yml).  You can visit http://localhost:8989 and enter the password(current: jupyterlab). A tiny custom config is included to set a password among other things. This can be changed as required.
+
+*** Makefile
+
+#+begin_src makefile :tangle ./05-files/Makefile
+.DEFAULT_GOAL:=help
+SHELL:=/usr/bin/env bash
+
+##@ Help
+
+help:  ## Show this message
+	@awk '\
+	BEGIN {FS = ":.*##"} \
+	/^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } \
+	/^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } \
+	' $(MAKEFILE_LIST)
+
+
+export HOST_USER_ID:=$(shell id -u)
+export HOST_GROUP_ID:=$(shell id -g)
+
+DOCKER_COMPOSE := docker-compose -f compose.yml
+DOCKER_COMPOSE_RUN_LAB := $(DOCKER_COMPOSE) run --rm lab
+
+##@ Building
+
+.PHONY: build
+
+build:  ## Build the docker images
+	$(if $(SERVICE_NAME), $(info -- Building $(SERVICE_NAME)), $(info -- Building all services, SERVICE_NAME not set.))
+	$(info -- Remember to run `make prune` after a `build` to clean up orphaned image layers)
+	$(DOCKER_COMPOSE) build $(SERVICE_NAME)
+
+
+##@ Start/Stop/Restart
+
+.PHONY: start stop restart
+
+start: ## Start all the project service containers daemonised (Logs are tailed by a separate command)
+	$(DOCKER_COMPOSE) up -d
+
+stop: ## Stop all the project service containers
+	$(DOCKER_COMPOSE) down --volumes
+
+restart: ## Restart the project service containers (Filtered via SERVICE_NAME, eg. make restart SERVICE_NAME=worker)
+	$(if $(SERVICE_NAME), $(info -- Restarting $(SERVICE_NAME)), $(info -- Restarting all services, SERVICE_NAME not set.))
+	$(DOCKER_COMPOSE) restart $(SERVICE_NAME)
+
+
+##@ Logging
+
+.PHONY: logs
+
+logs: ## Tail the logs for the project service containers (Filtered via SERVICE_NAME, eg. make tail-logs SERVICE_NAME=worker)
+	$(if $(SERVICE_NAME), $(info -- Tailing logs for $(SERVICE_NAME)), $(info -- Tailing all logs, SERVICE_NAME not set.))
+	$(DOCKER_COMPOSE) logs -f $(SERVICE_NAME)
+
+
+##@ One-off tasks
+
+.PHONY: run-lab
+
+run-lab: ## Run a one-off command in a new lab service container. Specify using CMD (eg. make run-lab CMD=echo something)
+	$(if $(CMD), $(DOCKER_COMPOSE_RUN_LAB) $(CMD), $(error -- CMD must be set))
+
+##@ Shell
+
+.PHONY: bash
+
+bash: CMD=conda_bash.sh
+bash: run-lab ## Spawn a bash shell for lab service
+
+
+##@ Cleanup
+
+.PHONY: prune
+
+prune: ## Cleanup dangling/orphaned docker resources
+	docker system prune --volumes -f
+#+end_src
+
+*** compose.yml
+
+#+begin_src text :tangle ./05-files/compose.yml
+  services:
+
+    lab:
+      build:
+        context: .
+      command: /opt/bin/run.sh lab
+      shm_size: '2gb'
+      volumes:
+        - ./app:/app
+        - ~/.cache/huggingface:/cache/huggingface
+        - ~/.cache/fastai:/cache/fastai
+      ports:
+        - "8989:8989"
+      environment:
+        - HOST_USER_ID
+        - HOST_GROUP_ID
+        - CACHE_DIR=/cache
+        - HF_HOME=/cache/huggingface
+        - FASTAI_HOME=/cache/fastai
+      deploy:
+        resources:
+          reservations:
+            devices:
+            - driver: nvidia
+              capabilities: [gpu]
+#+end_src
+
+*** Dockerfile
+
+#+begin_src text :tangle ./05-files/Dockerfile
+  FROM suvash/deeplibs:py3.7-cuda11.1-ubuntu20.04-<CORRECT-SHA>
+
+  ENV PATH="/opt/bin:$PATH" \
+      APP_DIR="/app"
+
+  WORKDIR "$APP_DIR"
+
+  COPY ./app/requirements.txt "$APP_DIR/requirements.txt"
+  RUN set -exu \
+      \
+      && . "$CONDA_DIR/etc/profile.d/conda.sh" \
+      && conda activate "$CONDA_ENV" \
+      && sg "$CONDA_GROUP" -c "pip install --no-cache-dir \
+                                           -r $APP_DIR/requirements.txt"
+
+  RUN set -exu \
+      \
+      && chmod -R g+w "$CONDA_DIR"
+
+  COPY ./app/.jupyter "$APP_DIR/.jupyter"
+  COPY ./bin /opt/bin
+
+  ENTRYPOINT ["/opt/bin/entrypoint.sh"]
+  CMD ["/bin/bash"]
+
+#+end_src
+
+*** app/requirements.txt
+
+#+begin_src text :tangle ./05-files/app/requirements.txt
+  # jupyter lab
+  jupyterlab==3.1.1
+  ipywidgets==7.6.3
+
+  # huggingface
+  transformers[sentencepiece]==4.9.1
+  datasets==1.11.0
+
+  # fastai
+  fastai==2.4.1
+#+end_src
+
+*** app/notebooks/.gitkeep
+
+#+begin_src text :tangle ./05-files/app/notebooks/.gitkeep
+.gitkeep
+#+end_src
+
+*** app/.jupyter/jupyter_server_config.py
+
+#+begin_src python :tangle ./05-files/app/.jupyter/jupyter_server_config.py
+  import os
+  app_dir = os.environ['APP_DIR']
+
+  c.ServerApp.ip = '0.0.0.0'
+  c.ServerApp.port = 8989
+  c.ServerApp.root_dir = f'{app_dir}/notebooks'
+  ## Hashed password to use for web authentication.
+  #  To generate a new one, type in a python/IPython shell:
+  #    from jupyter_server.auth import passwd; passwd()
+  #  The string should be of the form type:salt:hashed-password.
+  #  Default: ''
+  c.ServerApp.password = 'argon2:$argon2id$v=19$m=10240,t=10,p=8$1eHk4Z6OMpGBWpZhNqCj2Q$cM9oLq1q2CqZ6y02iOF9/A'
+#+end_src
+
+*** bin/entrypoint.sh
+
+#+begin_src shell :tangle ./05-files/bin/entrypoint.sh :tangle-mode (identity #o755)
+#!/usr/bin/env bash
+
+set -eou pipefail
+
+: "${HOST_USER_ID?Please set HOST_USER_ID environment variable. (Run 'id -u' to get the value.)}"
+: "${HOST_GROUP_ID?Please set HOST_GROUP_ID environment variable. (Run 'id -g' to get the value.)}"
+
+RUN_AS_UID=${HOST_USER_ID:-9999}
+RUN_AS_GID=${HOST_GROUP_ID:-9999}
+
+RUN_AS_USER_NAME=${CONTAINER_USER_NAME:-containeruser}
+RUN_AS_GROUP_NAME=${CONTAINER_GROUP_NAME:-containergroup}
+
+# Create a group/gid combination if it's not already present
+if getent group "$RUN_AS_GID" &> /dev/null; then
+    RUN_AS_GROUP_NAME=$(getent group "$RUN_AS_GID" | cut -d: -f1)
+else
+    groupadd --gid "$RUN_AS_GID" "$RUN_AS_GROUP_NAME"
+fi
+
+# Create a user/uid combination if it's not already present
+if getent passwd "$RUN_AS_UID" &> /dev/null; then
+    RUN_AS_USER_NAME=$(getent passwd "$RUN_AS_UID" | cut -d: -f1)
+else
+    useradd --no-user-group --create-home --shell /bin/bash --uid "$RUN_AS_UID" --gid "$RUN_AS_GID" "$RUN_AS_USER_NAME"
+fi
+
+# Append the user to the conda group
+usermod --append --groups "$CONDA_GROUP" "$RUN_AS_USER_NAME"
+
+# Prepare $HOME and $PATH before switching user
+export HOME="/home/$RUN_AS_USER_NAME"
+
+# This code path should not be hit easily. Print information if it arrives here.
+if [ "$RUN_AS_UID" -eq 9001 ] || [ "$RUN_AS_GID" -eq 9001 ]; then
+    cat <<-EOF
+
+	**********************************************************************************************
+	* You have not passed in either the HOST_USER_ID or the HOST_GROUP_ID environment variable.  *
+	* This could be because of some error or you are not using the Makefile helpers.             *
+	**********************************************************************************************
+	* As a result, your app and cache dir will be chowned by user:group=9001:9001                *
+	* To fix this, run `chown -R $(id -u):$(id -g) ./` on the project directory on host OS.      *
+	**********************************************************************************************
+	* Check the Makefile and entrypoint.sh for more details                                      *
+	**********************************************************************************************
+
+	EOF
+fi
+
+# Own the file before switching the user
+chown -R "$RUN_AS_UID":"$RUN_AS_GID" "$APP_DIR" "$CACHE_DIR"
+
+
+# Print the user/uid - group/gid to start with
+cat <<EOF
+
+***************************************************************************
+Starting as : uid($RUN_AS_UID)$RUN_AS_USER_NAME | gid($RUN_AS_GID)$RUN_AS_GROUP_NAME
+***************************************************************************
+
+EOF
+
+# Switch to the user:group and exec
+setpriv --reuid="$RUN_AS_UID" --regid="$RUN_AS_GID" --init-groups "$@"
+# exec gosu "$RUN_AS_UID":"$RUN_AS_GID" "$@"
+#+end_src
+
+*** bin/conda_bash.sh
+
+#+begin_src shell :tangle ./05-files/bin/conda_bash.sh :tangle-mode (identity #o755)
+  #!/usr/bin/env bash
+  set -euo pipefail
+
+  EXEC_CMD=${@:-/bin/bash}
+
+  source "$CONDA_DIR/etc/profile.d/conda.sh" \
+      && conda activate "$CONDA_ENV" \
+      && exec $EXEC_CMD
+#+end_src
+
+*** bin/run.sh
+
+#+begin_src shell :tangle ./05-files/bin/run.sh :tangle-mode (identity #o755)
+  #!/usr/bin/env bash
+  set -euo pipefail
+
+  source "$CONDA_DIR/etc/profile.d/conda.sh"
+  conda activate "$CONDA_ENV"
+
+
+  for arg; do
+    case $arg in
+      lab)
+        echo 'Running Jupyter lab'
+        export JUPYTER_CONFIG_DIR="$APP_DIR/.jupyter"
+        exec jupyter lab
+        ;;
+      ,*)
+        echo "Unknown target: $arg."
+        exit 1
+    esac
+  done
+#+end_src
+
