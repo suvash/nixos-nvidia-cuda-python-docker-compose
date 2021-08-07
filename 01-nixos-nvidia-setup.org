@@ -10,6 +10,8 @@ This setup is used for a RTX 30 series card, and using the stable driver on 21.0
 
 Having the GPU configuration in a separate file makes it easy to include in the main configuration.
 
+*** nvidia_gpu.nix
+
 #+begin_src nix :tangle ./01-files/nvidia_gpu.nix
   { config, lib, pkgs, ... }:
 
@@ -20,6 +22,8 @@ Having the GPU configuration in a separate file makes it easy to include in the 
 #+end_src
 
 Include the gpu config in the main configuration
+
+*** configuration.nix
 
 #+begin_src nix :tangle ./01-files/configuration.nix
   { config, lib, pkgs, ... }:
@@ -90,4 +94,4 @@ The instruction below are for running them without permanent installation. Insta
 
 ** Optionally, for i3 window manager, i3status-rust supports Nvidia GPU blocks
 
-Check the instructions on i3statu-rust wiki. https://github.com/greshake/i3status-rust/blob/master/doc/blocks.md#nvidia-gpu
+Check the instructions on i3status-rust wiki. https://github.com/greshake/i3status-rust/blob/master/doc/blocks.md#nvidia-gpu

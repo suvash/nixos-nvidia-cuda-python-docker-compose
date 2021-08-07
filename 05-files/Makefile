@@ -37,7 +37,7 @@ start: ## Start all the project service containers daemonised (Logs are tailed b
 stop: ## Stop all the project service containers
 	$(DOCKER_COMPOSE) down --volumes
 
-restart: ## Restart the project service containers (Filtered via SERVICE_NAME, eg. make restart SERVICE_NAME=worker)
+restart: ## Restart the project service containers (Filtered via SERVICE_NAME, eg. make restart SERVICE_NAME=lab)
 	$(if $(SERVICE_NAME), $(info -- Restarting $(SERVICE_NAME)), $(info -- Restarting all services, SERVICE_NAME not set.))
 	$(DOCKER_COMPOSE) restart $(SERVICE_NAME)
 
@@ -46,7 +46,7 @@ restart: ## Restart the project service containers (Filtered via SERVICE_NAME, e
 
 .PHONY: logs
 
-logs: ## Tail the logs for the project service containers (Filtered via SERVICE_NAME, eg. make tail-logs SERVICE_NAME=worker)
+logs: ## Tail the logs for the project service containers (Filtered via SERVICE_NAME, eg. make tail-logs SERVICE_NAME=lab)
 	$(if $(SERVICE_NAME), $(info -- Tailing logs for $(SERVICE_NAME)), $(info -- Tailing all logs, SERVICE_NAME not set.))
 	$(DOCKER_COMPOSE) logs -f $(SERVICE_NAME)
 

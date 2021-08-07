@@ -54,6 +54,8 @@ Test the docker-compose against the above service specification.
   test_1  | |=============================================================================|
   test_1  | +-----------------------------------------------------------------------------+
   compose-gpu_test_1 exited with code 0
+
+  > docker-compose down
 #+end_src
 
 

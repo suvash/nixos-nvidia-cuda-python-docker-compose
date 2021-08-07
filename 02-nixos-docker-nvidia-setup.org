@@ -6,6 +6,8 @@ This step is also fairly straightforward. During the time of this writing, NVIDI
 
 As previously mentioned, the configuration for docker is in a separate file as below.
 
+*** docker.nix
+
 #+begin_src nix :tangle ./02-files/docker.nix
   { config, lib, pkgs, ... }:
 
@@ -22,6 +24,8 @@ As previously mentioned, the configuration for docker is in a separate file as b
 #+end_src
 
 Include the gpu config in the main configuration
+
+*** configuration.nix
 
 #+begin_src nix :tangle ./02-files/configuration.nix
   { config, lib, pkgs, ... }:

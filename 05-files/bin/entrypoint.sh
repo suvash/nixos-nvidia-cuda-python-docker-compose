@@ -63,4 +63,3 @@ EOF
 
 # Switch to the user:group and exec
 setpriv --reuid="$RUN_AS_UID" --regid="$RUN_AS_GID" --init-groups "$@"
-# exec gosu "$RUN_AS_UID":"$RUN_AS_GID" "$@"

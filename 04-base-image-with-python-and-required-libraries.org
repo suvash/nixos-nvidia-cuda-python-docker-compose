@@ -8,9 +8,35 @@ There are various ways to go about this. If needed, the image can be built from 
 
 The files below have been tangled and made available in the 04-files directory. Feel free to copy over and continue directly.
 
-** Copy over the contents of the files (or simply copy 04-files folder)
+** Copy over the contents of the 04-files  and update as needed
 
-If you're copying over the 04-files directory, please make sure that you're matching the CUDA version on your host operating system. If not, then you'll have to adjust all the files below accordingly.
+Copy the contents of 04-files to a new project directory. Initialize a git repo since the sha is automatically used in the tag.
+
+Make sure that you're matching the CUDA version on your host operating system to the base image in the Dockerfile. Adjust the versions of python libraries as per the cuda requirements.
+
+** Build the base image and test python cuda support
+
+Adjust the content of Dockerfile and libraries as per your need.
+
+Simply build the image afterwards. This will take a while. Afterwards you should be able to use this image as a base for most of your deep learning projects.
+
+Make a note of the image tag as it'll be needed in next step.
+
+#+begin_src shell
+  cd /to/the/correct/folder/where/makefile/is/located
+  make build
+
+  # Test the image, get a terminal in the container and test cuda
+  docker run --rm --gpus all -it suvash/deeplibs:py3.7-cuda11.1-ubuntu20.04-<INSERT-SHA-HERE> /bin/bash
+  python -c "import torch; print(torch.cuda.is_available())"
+  exit
+
+  # If you'd like to remove the image for some reason
+  make clean
+#+end_src
+
+
+** Contents
 
 *** Makefile
 
@@ -192,24 +218,3 @@ The Dockerfile will be comprised of :
   triton==1.0.0
 #+end_src
 
-
-** Build the base image and test python cuda support
-
-If you've copied over the 04-files folder to a new location, make sure it's within a git repository(or just run git init on it). This is because the Makefile expects to use a git sha for the image tag.
-
-If you really do not need all the libraries installed here, feel free to remove some of them and adjust the Dockerfile accordingly.
-
-Simply build the image afterwards. This will take a while and some bandwidth. But, afterwards you will be able to use this in any of your deep learning projects.
-
-#+begin_src shell
-  cd /to/the/correct/folder/where/makefile/is/located
-  make build
-
-  # Test the image, get a terminal in the container and test cuda
-  docker run --rm --gpus all -it suvash/deeplibs:py3.7-cuda11.1-ubuntu20.04-<INSERT-SHA-HERE> /bin/bash
-  python -c "import torch; print(torch.cuda.is_available())"
-  exit
-
-  # If you'd like to clean the image for some reason
-  make clean
-#+end_src

@@ -6,17 +6,43 @@ We will walk through an example project here, setting up a Jupyter project along
 
 Similar to the previous step, the project files have been made available in the 05-files directory. Make sure that you are matching the CUDA version on your host OS and base images.
 
-** Copy over the contents of the 05-files (generated from below) and make updates as needed
+** Copy over the contents of the 05-files and update as needed
 
-In the compose file, we mount some volumes to be able to cache downloads from certain libraries such as HuggingFace, Fastai etc. Please make sure that these mount points exist, or change them accordingly.
+Copy the contents of 05-files to a new project directory.
 
-In the Dockerfile, FIX the image tag (SHA) as generated on your machine.
+Some updates has to be made to some file before we can proceed.
 
-In the requirements.txt, we add the libraries that we'd like to use; jupyter, transformers etc.
++ Dockerfile : Fix the image tag based on what you got from previous step
++ compose.yml : Make sure the volume mounts look good, or update them as needed.
++ compose.yml : Check the port bindings and make sure it's updated if you change the jupyter config.
++ requirements.txt : Add/Update the libraries in requirements.txt
++ jupyter_server_config.py : Update the password for jupyterlab if you want, else the current one is set to the string "jupyterlab".
 
-We use a custom entrypoint as well, so that we can use drop root credentials and use the correct uid:gid when starting out the jupyter process within the container. This ensures that files will be read and written correctly with the host uid:gid and is handled by the Makefile.
+We use a custom entrypoint as well, so that we can drop root credentials and use the correct uid:gid when starting out the jupyterlab process within the container. This ensures that files will be read and written correctly with the host uid:gid. This is handled automatically by the Makefile.
 
-Finally, we setup the JupyterLab to run on port 8989 (bind to same host port in compose.yml).  You can visit http://localhost:8989 and enter the password(current: jupyterlab). A tiny custom config is included to set a password among other things. This can be changed as required.
+** Build the project and use it via the Makefile
+
+The provided Makefile does a bunch of homekeeping and handles starting/stopping the Jupyter server as well as a (new) container bash prompt.
+
+#+begin_src shell
+  cd /to/where/the/project/is/located
+  make help
+
+  # Rebuild the images
+  make build
+
+  # Start/stop jupyter lab
+  make start
+  make stop
+
+  # Tail logs
+  make logs
+
+  # Get a bash terminal on a new container
+  make bash
+#+end_src
+
+** Contents
 
 *** Makefile
 
@@ -60,7 +86,7 @@ start: ## Start all the project service containers daemonised (Logs are tailed b
 stop: ## Stop all the project service containers
 	$(DOCKER_COMPOSE) down --volumes
 
-restart: ## Restart the project service containers (Filtered via SERVICE_NAME, eg. make restart SERVICE_NAME=worker)
+restart: ## Restart the project service containers (Filtered via SERVICE_NAME, eg. make restart SERVICE_NAME=lab)
 	$(if $(SERVICE_NAME), $(info -- Restarting $(SERVICE_NAME)), $(info -- Restarting all services, SERVICE_NAME not set.))
 	$(DOCKER_COMPOSE) restart $(SERVICE_NAME)
 
@@ -69,7 +95,7 @@ restart: ## Restart the project service containers (Filtered via SERVICE_NAME, e
 
 .PHONY: logs
 
-logs: ## Tail the logs for the project service containers (Filtered via SERVICE_NAME, eg. make tail-logs SERVICE_NAME=worker)
+logs: ## Tail the logs for the project service containers (Filtered via SERVICE_NAME, eg. make tail-logs SERVICE_NAME=lab)
 	$(if $(SERVICE_NAME), $(info -- Tailing logs for $(SERVICE_NAME)), $(info -- Tailing all logs, SERVICE_NAME not set.))
 	$(DOCKER_COMPOSE) logs -f $(SERVICE_NAME)
 
@@ -263,7 +289,6 @@ EOF
 
 # Switch to the user:group and exec
 setpriv --reuid="$RUN_AS_UID" --regid="$RUN_AS_GID" --init-groups "$@"
-# exec gosu "$RUN_AS_UID":"$RUN_AS_GID" "$@"
 #+end_src
 
 *** bin/conda_bash.sh

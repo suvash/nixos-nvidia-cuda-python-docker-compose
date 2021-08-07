@@ -1,13 +1,20 @@
 { config, lib, pkgs, ... }:
 
-  {
-    imports = [
-      ./hardware-configuration.nix
+{
+  imports = [
+    ./hardware-configuration.nix
 
-      ....
-      # virtualisation
-      ./docker.nix
+    .
+    .
 
-    ];
+    # virtualisation
+    ./docker.nix
 
-....
+    .
+    .
+
+  ];
+
+.
+.
+.
