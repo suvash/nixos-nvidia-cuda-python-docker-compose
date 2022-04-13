@@ -17,7 +17,7 @@ As previously mentioned, the configuration for docker is in a separate file as b
 
     # Nvidia Docker
     virtualisation.docker.enableNvidia = true;
-    # libnvidia-container does not support cgroups v2
+    # libnvidia-container does not support cgroups v2 (prior to 1.8.0)
     # https://github.com/NVIDIA/nvidia-docker/issues/1447
     systemd.enableUnifiedCgroupHierarchy = false;
   }
@@ -61,17 +61,17 @@ If there's no exact match, you can try to get an image that has a slightly older
 Note that you will not be able to see all the pids as you could on the host, unless you use the --pid=host flag.
 
 #+begin_src shell
-  > docker run --rm --gpus all nvidia/cuda:11.2.0-base-ubuntu20.04 nvidia-smi
-  Sat Aug  7 13:31:51 2021
+  > docker run --rm --gpus all nvidia/cuda:11.6.2-base-ubuntu20.04 nvidia-smi
+  Wed Apr 13 18:34:38 2022
   +-----------------------------------------------------------------------------+
-  | NVIDIA-SMI 460.73.01    Driver Version: 460.73.01    CUDA Version: 11.2     |
+  | NVIDIA-SMI 510.60.02    Driver Version: 510.60.02    CUDA Version: 11.6     |
   |-------------------------------+----------------------+----------------------+
   | GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
   | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
   |                               |                      |               MIG M. |
   |===============================+======================+======================|
-  |   0  GeForce RTX 3090    Off  | 00000000:01:00.0  On |                  N/A |
-  |  0%   49C    P8    42W / 370W |    655MiB / 24265MiB |      3%      Default |
+  |   0  NVIDIA GeForce ...  Off  | 00000000:01:00.0 Off |                  N/A |
+  |  0%   37C    P8    19W / 370W |     54MiB / 24576MiB |      0%      Default |
   |                               |                      |                  N/A |
   +-------------------------------+----------------------+----------------------+
 
@@ -80,6 +80,7 @@ Note that you will not be able to see all the pids as you could on the host, unl
   |  GPU   GI   CI        PID   Type   Process name                  GPU Memory |
   |        ID   ID                                                   Usage      |
   |=============================================================================|
+  |    0   N/A  N/A      1280      G                                      52MiB |
   +-----------------------------------------------------------------------------+
 #+end_src
 

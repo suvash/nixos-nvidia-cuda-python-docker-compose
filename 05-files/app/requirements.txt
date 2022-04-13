@@ -1,10 +1,10 @@
 # jupyter lab
-jupyterlab==3.1.1
-ipywidgets==7.6.3
+jupyterlab
+ipywidgets
 
 # huggingface
-transformers[sentencepiece]==4.9.1
-datasets==1.11.0
+transformers[sentencepiece]
+datasets
 
 # fastai
-fastai==2.4.1
+fastai

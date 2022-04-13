@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.1.1-base-ubuntu20.04
+FROM nvidia/cuda:11.6.2-devel-ubuntu20.04
 
 RUN set -exu \
     \
@@ -18,9 +18,9 @@ RUN set -exu \
 ARG WORKDIR="/workspace"
 ARG CONDA_DIR="/conda"
 ARG CONDA_GROUP="conda"
-ARG CONDA_ENV="py37-cuda111"
-ARG CONDA_VERSION="py37_4.10.3"
-ARG CONDA_SHA256SUM="a1a7285dea0edc430b2bc7951d89bb30a2a1b32026d2a7b02aacaaa95cf69c7c"
+ARG CONDA_ENV="py310-cuda116"
+ARG CONDA_VERSION="py39_4.11.0"
+ARG CONDA_SHA256SUM="4ee9c3aa53329cd7a63b49877c0babb49b19b7e5af29807b793a76bdb1d362b4"
 
 ENV CONDA_AUTO_UPDATE_CONDA=false \
     CONDA_DIR="$CONDA_DIR" \
@@ -65,22 +65,5 @@ RUN set -exu \
     && sg "$CONDA_GROUP" -c "pip install --no-cache-dir \
                                          -r /tmp/$CONDA_ENV/jax.requirements.txt \
                                          -f https://storage.googleapis.com/jax-releases/jax_releases.html"
-
-COPY ./tensorflow.requirements.txt "/tmp/$CONDA_ENV/tensorflow.requirements.txt"
-RUN set -exu \
-    \
-    && . "$CONDA_DIR/etc/profile.d/conda.sh" \
-    && conda activate "$CONDA_ENV" \
-    && sg "$CONDA_GROUP" -c "pip install --no-cache-dir \
-                                         -r /tmp/$CONDA_ENV/tensorflow.requirements.txt"
-
-COPY ./triton.requirements.txt "/tmp/$CONDA_ENV/triton.requirements.txt"
-RUN set -exu \
-    \
-    && . "$CONDA_DIR/etc/profile.d/conda.sh" \
-    && conda activate "$CONDA_ENV" \
-    && sg "$CONDA_GROUP" -c "pip install --no-cache-dir \
-                                         -r /tmp/$CONDA_ENV/triton.requirements.txt"
-
 
 WORKDIR "$WORKDIR"
