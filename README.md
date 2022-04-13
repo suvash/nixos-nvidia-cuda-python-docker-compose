@@ -26,7 +26,7 @@ Follow the guide from step 03.
 - [Step 04 : Prepare a base Python image with DL libraries](./04-base-image-with-python-and-required-libraries.org)
 - [Step 05 : Prepare a Compose project with base image, JupyterLab & libs](./05-docker-compose-project-base-image-jupyter-and-friends.org)
 
-# Just a head up
+# Just a heads up
 
 While most of the files (and project folders are provided), you might have to update a couple of files, specially towards the final step. So, taking the time to go through the documentation is definitely advised.
 

@@ -156,7 +156,7 @@ prune: ## Cleanup dangling/orphaned docker resources
 *** Dockerfile
 
 #+begin_src text :tangle ./05-files/Dockerfile
-  FROM suvash/deeplibs:py3.7-cuda11.1-ubuntu20.04-<CORRECT-SHA>
+  FROM suvash/deeplibs:py3.10-cuda11.6-ubuntu20.04-<CORRECT-SHA>
 
   ENV PATH="/opt/bin:$PATH" \
       APP_DIR="/app"
@@ -180,22 +180,21 @@ prune: ## Cleanup dangling/orphaned docker resources
 
   ENTRYPOINT ["/opt/bin/entrypoint.sh"]
   CMD ["/bin/bash"]
-
 #+end_src
 
 *** app/requirements.txt
 
 #+begin_src text :tangle ./05-files/app/requirements.txt
   # jupyter lab
-  jupyterlab==3.1.1
-  ipywidgets==7.6.3
+  jupyterlab
+  ipywidgets
 
   # huggingface
-  transformers[sentencepiece]==4.9.1
-  datasets==1.11.0
+  transformers[sentencepiece]
+  datasets
 
   # fastai
-  fastai==2.4.1
+  fastai
 #+end_src
 
 *** app/notebooks/.gitkeep
