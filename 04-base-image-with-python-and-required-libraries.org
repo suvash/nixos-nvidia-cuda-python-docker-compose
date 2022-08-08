@@ -93,6 +93,9 @@ The Dockerfile will be comprised of :
 #+begin_src text :tangle ./04-files/deeplibs/py3.10-cuda11.6-ubuntu20.04/Dockerfile
   FROM nvidia/cuda:11.6.2-devel-ubuntu20.04
 
+  ENV DEBIAN_FRONTEND=noninteractive \
+      TZ=Europe/Stockholm
+
   RUN set -exu \
       \
       && apt-get update \
@@ -103,6 +106,8 @@ The Dockerfile will be comprised of :
                  curl \
                  jq \
                  gosu \
+      ## libraries
+                 libvips \
       && apt-get clean \
       && apt-get autoremove --yes \
       && rm -rf /var/lib/apt/lists/* \

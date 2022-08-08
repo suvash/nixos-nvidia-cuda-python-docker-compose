@@ -1,5 +1,8 @@
 FROM nvidia/cuda:11.6.2-devel-ubuntu20.04
 
+ENV DEBIAN_FRONTEND=noninteractive \
+    TZ=Europe/Stockholm
+
 RUN set -exu \
     \
     && apt-get update \
@@ -10,6 +13,8 @@ RUN set -exu \
                curl \
                jq \
                gosu \
+    ## libraries
+               libvips \
     && apt-get clean \
     && apt-get autoremove --yes \
     && rm -rf /var/lib/apt/lists/* \
