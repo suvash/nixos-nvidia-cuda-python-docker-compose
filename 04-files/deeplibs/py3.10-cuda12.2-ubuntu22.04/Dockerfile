@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.6.2-devel-ubuntu20.04
+FROM nvidia/cuda:12.2.0-devel-ubuntu22.04
 
 RUN set -exu \
     \
@@ -18,9 +18,9 @@ RUN set -exu \
 ARG WORKDIR="/workspace"
 ARG CONDA_DIR="/conda"
 ARG CONDA_GROUP="conda"
-ARG CONDA_ENV="py310-cuda116"
-ARG CONDA_VERSION="py39_4.11.0"
-ARG CONDA_SHA256SUM="4ee9c3aa53329cd7a63b49877c0babb49b19b7e5af29807b793a76bdb1d362b4"
+ARG CONDA_ENV="py310-cuda122"
+ARG CONDA_VERSION="py310_23.5.2-0"
+ARG CONDA_SHA256SUM="ea5e6e8a3d5a0247b9df85382d27220fac8e59b5778fd313c5913879cd9baafc"
 
 ENV CONDA_AUTO_UPDATE_CONDA=false \
     CONDA_DIR="$CONDA_DIR" \
@@ -55,7 +55,7 @@ RUN set -exu \
     && conda activate "$CONDA_ENV" \
     && sg "$CONDA_GROUP" -c "pip install --no-cache-dir \
                                          -r /tmp/$CONDA_ENV/pytorch.requirements.txt \
-                                         -f https://download.pytorch.org/whl/torch_stable.html"
+                                         --index-url https://download.pytorch.org/whl/nightly/cu121"
 
 COPY ./jax.requirements.txt "/tmp/$CONDA_ENV/jax.requirements.txt"
 RUN set -exu \
@@ -64,6 +64,6 @@ RUN set -exu \
     && conda activate "$CONDA_ENV" \
     && sg "$CONDA_GROUP" -c "pip install --no-cache-dir \
                                          -r /tmp/$CONDA_ENV/jax.requirements.txt \
-                                         -f https://storage.googleapis.com/jax-releases/jax_releases.html"
+                                         -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html"
 
 WORKDIR "$WORKDIR"

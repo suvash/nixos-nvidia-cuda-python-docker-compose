@@ -1,0 +1,2 @@
+jax[cuda12_pip]==0.4.14
+jaxlib==0.4.14+cuda12.cudnn89

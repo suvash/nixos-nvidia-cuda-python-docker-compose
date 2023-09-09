@@ -60,7 +60,7 @@ Check the general information about your GPU. Make a note of the CUDA driver ver
   > nvidia-smi
   Wed Apr 13 20:32:06 2022
   +-----------------------------------------------------------------------------+
-  | NVIDIA-SMI 510.60.02    Driver Version: 510.60.02    CUDA Version: 11.6     |
+  | NVIDIA-SMI 510.60.02    Driver Version: 510.60.02    CUDA Version: 12.2     |
   |-------------------------------+----------------------+----------------------+
   | GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
   | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |

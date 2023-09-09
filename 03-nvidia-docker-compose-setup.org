@@ -17,7 +17,7 @@ Check the version before you proceed.
 #+begin_src yaml :tangle ./03-files/docker-compose.yml
   services:
     test:
-      image: nvidia/cuda:11.6.2-base-ubuntu20.04
+      image: nvidia/cuda:12.2.0-base-ubuntu22.04
       command: nvidia-smi
       deploy:
         resources:
@@ -37,7 +37,7 @@ Test the docker-compose against the above service specification.
   Attaching to compose-gpu_test_1
   test_1  | Wed Apr 13 18:50:02 2022
   test_1  | +-----------------------------------------------------------------------------+
-  test_1  | | NVIDIA-SMI 510.60.02    Driver Version: 510.60.02    CUDA Version: 11.6     |
+  test_1  | | NVIDIA-SMI 510.60.02    Driver Version: 510.60.02    CUDA Version: 12.2     |
   test_1  | |-------------------------------+----------------------+----------------------+
   test_1  | | GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
   test_1  | | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |

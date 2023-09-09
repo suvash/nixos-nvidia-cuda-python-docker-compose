@@ -1,4 +1,4 @@
-FROM suvash/deeplibs:py3.10-cuda11.6-ubuntu20.04-<CORRECT-SHA>
+FROM suvash/deeplibs:py3.10-cuda12.2-ubuntu22.04-f798f2f
 
 ENV PATH="/opt/bin:$PATH" \
     APP_DIR="/app"
