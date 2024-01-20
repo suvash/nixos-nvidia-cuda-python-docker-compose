@@ -9,7 +9,6 @@ for arg; do
   case $arg in
     lab)
       echo 'Running Jupyter lab'
-      export JUPYTER_CONFIG_DIR="$APP_DIR/.jupyter"
       exec jupyter lab
       ;;
     *)

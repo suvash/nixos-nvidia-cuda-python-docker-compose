@@ -6,5 +6,5 @@ ipywidgets
 transformers[sentencepiece]
 datasets
 
-# fastai
-fastai
+# other
+vllm

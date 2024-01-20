@@ -27,9 +27,8 @@ Make a note of the image tag as it'll be needed in next step.
   make build
 
   # Test the image, get a terminal in the container and test cuda
-  docker run --rm --gpus all -it suvash/deeplibs:py3.10-cuda11.6-ubuntu20.04-<INSERT-SHA-HERE> /bin/bash
+  docker run --rm --gpus all -it suvash/deeplibs:py3.11-cuda12.1-ubuntu22.04-<INSERT-SHA-HERE> /bin/bash
   python -c "import torch; print(torch.cuda.is_available())"
-  python -c "import jax; print(jax.local_devices())"
   exit
 
   # If you'd like to remove the image for some reason
@@ -54,7 +53,7 @@ SHA_HEAD:=$(shell git rev-parse --short HEAD)
 DATE_NOW:=$(shell date +%Y-%m-%dT%H:%M:%S%z)
 
 DEEPLIBS_NAME:=deeplibs
-DEEPLIBS_TAG_PREFIX:=py3.10-cuda11.6-ubuntu20.04
+DEEPLIBS_TAG_PREFIX:=py3.11-cuda12.1-ubuntu22.04
 DEEPLIBS_FOLDER:=$(DEEPLIBS_NAME)/$(DEEPLIBS_TAG_PREFIX)
 DEEPLIBS_IMAGE:=$(IMAGE_PREFIX)/$(DEEPLIBS_NAME):$(DEEPLIBS_TAG_PREFIX)-$(SHA_HEAD)
 
@@ -83,15 +82,14 @@ clean-deeplibs:
 
 
 The Dockerfile will be comprised of :
-+ CUDA base image 11.6.2 (because most libraries below are targeted to CUDA 11.6 or lower)
-+ Miniconda with Python 3.10
++ CUDA base image 12.1
++ Miniconda with Python 3.11
 + Pytorch
-+ Jax
 
 **** Dockerfile
 
-#+begin_src text :tangle ./04-files/deeplibs/py3.10-cuda11.6-ubuntu20.04/Dockerfile
-  FROM nvidia/cuda:11.6.2-devel-ubuntu20.04
+#+begin_src text :tangle ./04-files/deeplibs/py3.11-cuda12.1-ubuntu22.04/Dockerfile
+  FROM nvidia/cuda:12.1.0-devel-ubuntu22.04
 
   RUN set -exu \
       \
@@ -111,9 +109,10 @@ The Dockerfile will be comprised of :
   ARG WORKDIR="/workspace"
   ARG CONDA_DIR="/conda"
   ARG CONDA_GROUP="conda"
-  ARG CONDA_ENV="py310-cuda116"
-  ARG CONDA_VERSION="py39_4.11.0"
-  ARG CONDA_SHA256SUM="4ee9c3aa53329cd7a63b49877c0babb49b19b7e5af29807b793a76bdb1d362b4"
+  ARG CONDA_ENV="py311-cuda121"
+  ARG CONDA_VERSION="py311_23.11.0-2"
+  ARG CONDA_SHA256SUM="c9ae82568e9665b1105117b4b1e499607d2a920f0aea6f94410e417a0eff1b9c"
+
 
   ENV CONDA_AUTO_UPDATE_CONDA=false \
       CONDA_DIR="$CONDA_DIR" \
@@ -150,40 +149,25 @@ The Dockerfile will be comprised of :
                                            -r /tmp/$CONDA_ENV/pytorch.requirements.txt \
                                            -f https://download.pytorch.org/whl/torch_stable.html"
 
-  COPY ./jax.requirements.txt "/tmp/$CONDA_ENV/jax.requirements.txt"
-  RUN set -exu \
-      \
-      && . "$CONDA_DIR/etc/profile.d/conda.sh" \
-      && conda activate "$CONDA_ENV" \
-      && sg "$CONDA_GROUP" -c "pip install --no-cache-dir \
-                                           -r /tmp/$CONDA_ENV/jax.requirements.txt \
-                                           -f https://storage.googleapis.com/jax-releases/jax_releases.html"
-
   WORKDIR "$WORKDIR"
 #+end_src
 
 **** Conda environment.yml
 
-#+begin_src text :tangle ./04-files/deeplibs/py3.10-cuda11.6-ubuntu20.04/environment.yml
+#+begin_src text :tangle ./04-files/deeplibs/py3.11-cuda12.1-ubuntu22.04/environment.yml
   ---
   name: CONDA_ENV
   channels:
     - defaults
 
   dependencies:
-    - python=3.10.4
+    - python=3.11.7
 #+end_src
 
 ****  pytorch.requirements.txt
 
-#+begin_src text :tangle ./04-files/deeplibs/py3.10-cuda11.6-ubuntu20.04/pytorch.requirements.txt
-  torch==1.11.0+cu115
-  torchaudio==0.11.0+cu115
-  torchvision==0.12.0+cu115
-#+end_src
-
-****  jax.requirements.txt
-
-#+begin_src text :tangle ./04-files/deeplibs/py3.10-cuda11.6-ubuntu20.04/jax.requirements.txt
-  jax[cuda]==0.3.6
+#+begin_src text :tangle ./04-files/deeplibs/py3.11-cuda12.1-ubuntu22.04/pytorch.requirements.txt
+  torch==2.1.2+cu121
+  torchaudio==2.1.2+cu121
+  torchvision==0.16.2+cu121
 #+end_src

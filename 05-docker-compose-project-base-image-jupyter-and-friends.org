@@ -132,11 +132,10 @@ prune: ## Cleanup dangling/orphaned docker resources
       build:
         context: .
       command: /opt/bin/run.sh lab
-      shm_size: '2gb'
+      shm_size: '4gb'
       volumes:
         - ./app:/app
         - ~/.cache/huggingface:/cache/huggingface
-        - ~/.cache/fastai:/cache/fastai
       ports:
         - "8989:8989"
       environment:
@@ -144,7 +143,6 @@ prune: ## Cleanup dangling/orphaned docker resources
         - HOST_GROUP_ID
         - CACHE_DIR=/cache
         - HF_HOME=/cache/huggingface
-        - FASTAI_HOME=/cache/fastai
       deploy:
         resources:
           reservations:
@@ -156,10 +154,11 @@ prune: ## Cleanup dangling/orphaned docker resources
 *** Dockerfile
 
 #+begin_src text :tangle ./05-files/Dockerfile
-  FROM suvash/deeplibs:py3.10-cuda11.6-ubuntu20.04-<CORRECT-SHA>
+  FROM suvash/deeplibs:py3.11-cuda12.1-ubuntu22.04-<CORRECT-SHA>
 
   ENV PATH="/opt/bin:$PATH" \
-      APP_DIR="/app"
+      APP_DIR="/app" \
+      JUPYTER_CONFIG_DIR="/app/.jupyter"
 
   WORKDIR "$APP_DIR"
 
@@ -175,7 +174,7 @@ prune: ## Cleanup dangling/orphaned docker resources
       \
       && chmod -R g+w "$CONDA_DIR"
 
-  COPY ./app/.jupyter "$APP_DIR/.jupyter"
+  COPY ./app/.jupyter "$JUPYTER_CONFIG_DIR"
   COPY ./bin /opt/bin
 
   ENTRYPOINT ["/opt/bin/entrypoint.sh"]
@@ -193,8 +192,8 @@ prune: ## Cleanup dangling/orphaned docker resources
   transformers[sentencepiece]
   datasets
 
-  # fastai
-  fastai
+  # other
+  vllm
 #+end_src
 
 *** app/notebooks/.gitkeep
@@ -207,6 +206,8 @@ prune: ## Cleanup dangling/orphaned docker resources
 
 #+begin_src python :tangle ./05-files/app/.jupyter/jupyter_server_config.py
   import os
+
+  c = get_config()
   app_dir = os.environ['APP_DIR']
 
   c.ServerApp.ip = '0.0.0.0'
@@ -216,7 +217,7 @@ prune: ## Cleanup dangling/orphaned docker resources
   #  To generate a new one, type in a python/IPython shell:
   #    from jupyter_server.auth import passwd; passwd()
   #  The string should be of the form type:salt:hashed-password.
-  #  Default: ''
+  #  Default: 'jupyterlab'
   c.ServerApp.password = 'argon2:$argon2id$v=19$m=10240,t=10,p=8$1eHk4Z6OMpGBWpZhNqCj2Q$cM9oLq1q2CqZ6y02iOF9/A'
 #+end_src
 
@@ -317,7 +318,6 @@ setpriv --reuid="$RUN_AS_UID" --regid="$RUN_AS_GID" --init-groups "$@"
     case $arg in
       lab)
         echo 'Running Jupyter lab'
-        export JUPYTER_CONFIG_DIR="$APP_DIR/.jupyter"
         exec jupyter lab
         ;;
       ,*)
@@ -326,4 +326,3 @@ setpriv --reuid="$RUN_AS_UID" --regid="$RUN_AS_GID" --init-groups "$@"
     esac
   done
 #+end_src
-

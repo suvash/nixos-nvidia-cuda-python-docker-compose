@@ -6,7 +6,7 @@ As NixOS already has good support for using Nvidia drivers, this is going to be 
 
 As  mentioned in the official NixOS wiki, installation of the driver is a simple switch of configuration. https://nixos.wiki/wiki/Nvidia
 
-This setup is used for a RTX 30 series card, and using the stable driver on 21.05 channel. (Driver version 460.73.01 on 7th August 2021). Please check the wiki link above to see if you're using a relatively old card and might need legacy drivers.
+This setup is used for a RTX 30 series card, and using the stable driver on 23.11 channel. (Driver Version: 545.29.02 on Jan 19th 2024). Please check the wiki link above to see if you're using a relatively old card and might need legacy drivers.
 
 Having the GPU configuration in a separate file makes it easy to include in the main configuration.
 
@@ -58,26 +58,26 @@ Check the general information about your GPU. Make a note of the CUDA driver ver
 
 #+begin_src shell
   > nvidia-smi
-  Wed Apr 13 20:32:06 2022
-  +-----------------------------------------------------------------------------+
-  | NVIDIA-SMI 510.60.02    Driver Version: 510.60.02    CUDA Version: 11.6     |
-  |-------------------------------+----------------------+----------------------+
-  | GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
-  | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
-  |                               |                      |               MIG M. |
-  |===============================+======================+======================|
-  |   0  NVIDIA GeForce ...  Off  | 00000000:01:00.0 Off |                  N/A |
-  |  0%   37C    P8    18W / 370W |     54MiB / 24576MiB |      0%      Default |
-  |                               |                      |                  N/A |
-  +-------------------------------+----------------------+----------------------+
+  Fri Jan 19 00:56:50 2024
+  +---------------------------------------------------------------------------------------+
+  | NVIDIA-SMI 545.29.02              Driver Version: 545.29.02    CUDA Version: 12.3     |
+  |-----------------------------------------+----------------------+----------------------+
+  | GPU  Name                 Persistence-M | Bus-Id        Disp.A | Volatile Uncorr. ECC |
+  | Fan  Temp   Perf          Pwr:Usage/Cap |         Memory-Usage | GPU-Util  Compute M. |
+  |                                         |                      |               MIG M. |
+  |=========================================+======================+======================|
+  |   0  NVIDIA GeForce RTX 3090        Off | 00000000:01:00.0 Off |                  N/A |
+  |  0%   35C    P8              23W / 370W |     60MiB / 24576MiB |      0%      Default |
+  |                                         |                      |                  N/A |
+  +-----------------------------------------+----------------------+----------------------+
 
-  +-----------------------------------------------------------------------------+
-  | Processes:                                                                  |
-  |  GPU   GI   CI        PID   Type   Process name                  GPU Memory |
-  |        ID   ID                                                   Usage      |
-  |=============================================================================|
-  |    0   N/A  N/A      1280      G   ...xorg-server-1.20.13/bin/X       52MiB |
-  +-----------------------------------------------------------------------------+
+  +---------------------------------------------------------------------------------------+
+  | Processes:                                                                            |
+  |  GPU   GI   CI        PID   Type   Process name                            GPU Memory |
+  |        ID   ID                                                             Usage      |
+  |=======================================================================================|
+  |    0   N/A  N/A      1421      G   ...d7i554q9hl-xorg-server-21.1.9/bin/X       52MiB |
+  +---------------------------------------------------------------------------------------+
 #+end_src
 
 ** Install some useful tools (and benchmarks) on the NixOS host
@@ -92,4 +92,4 @@ The instruction below are for running them without permanent installation. Insta
 
 ** Optionally, for i3 window manager, i3status-rust supports Nvidia GPU blocks
 
-Check the instructions on i3status-rust wiki. https://github.com/greshake/i3status-rust/blob/master/doc/blocks.md#nvidia-gpu
+https://greshake.github.io/i3status-rust/i3status_rs/blocks/nvidia_gpu/index.html
