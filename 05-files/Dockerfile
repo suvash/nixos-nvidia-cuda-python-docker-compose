@@ -1,7 +1,8 @@
-FROM suvash/deeplibs:py3.10-cuda11.6-ubuntu20.04-<CORRECT-SHA>
+FROM suvash/deeplibs:py3.11-cuda12.1-ubuntu22.04-<CORRECT-SHA>
 
 ENV PATH="/opt/bin:$PATH" \
-    APP_DIR="/app"
+    APP_DIR="/app" \
+    JUPYTER_CONFIG_DIR="/app/.jupyter"
 
 WORKDIR "$APP_DIR"
 
@@ -17,7 +18,7 @@ RUN set -exu \
     \
     && chmod -R g+w "$CONDA_DIR"
 
-COPY ./app/.jupyter "$APP_DIR/.jupyter"
+COPY ./app/.jupyter "$JUPYTER_CONFIG_DIR"
 COPY ./bin /opt/bin
 
 ENTRYPOINT ["/opt/bin/entrypoint.sh"]

@@ -56,32 +56,31 @@ Rebuild the nixos configuration and run tests as mentioned below.
 
 Having made a note of the CUDA version running on your NixOS host, get an image from docker hub with a matching CUDA version.
 
-If there's no exact match, you can try to get an image that has a slightly older minor version, but not the major one. For eg. if you have CUDA 11.2 on your NixOS host, getting an image with CUDA 11.1 should be compatible. Always match the CUDA major version, and get the least old minor version image.
+If there's no exact match, you can try to get an image that has a slightly older minor version, but not the major one. For eg. if you have CUDA 12.3 on your NixOS host, getting an image with CUDA 12.1 should be compatible. Always match the CUDA major version, and get the least old minor version image.
 
 Note that you will not be able to see all the pids as you could on the host, unless you use the --pid=host flag.
 
 #+begin_src shell
-  > docker run --rm --gpus all nvidia/cuda:11.6.2-base-ubuntu20.04 nvidia-smi
-  Wed Apr 13 18:34:38 2022
-  +-----------------------------------------------------------------------------+
-  | NVIDIA-SMI 510.60.02    Driver Version: 510.60.02    CUDA Version: 11.6     |
-  |-------------------------------+----------------------+----------------------+
-  | GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
-  | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
-  |                               |                      |               MIG M. |
-  |===============================+======================+======================|
-  |   0  NVIDIA GeForce ...  Off  | 00000000:01:00.0 Off |                  N/A |
-  |  0%   37C    P8    19W / 370W |     54MiB / 24576MiB |      0%      Default |
-  |                               |                      |                  N/A |
-  +-------------------------------+----------------------+----------------------+
+  > docker run --rm --gpus all nvidia/cuda:12.1.0-base-ubuntu22.04 nvidia-smi
+  Fri Jan 19 00:47:29 2024
+  +---------------------------------------------------------------------------------------+
+  | NVIDIA-SMI 545.29.02              Driver Version: 545.29.02    CUDA Version: 12.3     |
+  |-----------------------------------------+----------------------+----------------------+
+  | GPU  Name                 Persistence-M | Bus-Id        Disp.A | Volatile Uncorr. ECC |
+  | Fan  Temp   Perf          Pwr:Usage/Cap |         Memory-Usage | GPU-Util  Compute M. |
+  |                                         |                      |               MIG M. |
+  |=========================================+======================+======================|
+  |   0  NVIDIA GeForce RTX 3090        Off | 00000000:01:00.0  On |                  N/A |
+  |  0%   50C    P8              40W / 370W |    480MiB / 24576MiB |      8%      Default |
+  |                                         |                      |                  N/A |
+  +-----------------------------------------+----------------------+----------------------+
 
-  +-----------------------------------------------------------------------------+
-  | Processes:                                                                  |
-  |  GPU   GI   CI        PID   Type   Process name                  GPU Memory |
-  |        ID   ID                                                   Usage      |
-  |=============================================================================|
-  |    0   N/A  N/A      1280      G                                      52MiB |
-  +-----------------------------------------------------------------------------+
+  +---------------------------------------------------------------------------------------+
+  | Processes:                                                                            |
+  |  GPU   GI   CI        PID   Type   Process name                            GPU Memory |
+  |        ID   ID                                                             Usage      |
+  |=======================================================================================|
+  +---------------------------------------------------------------------------------------+
 #+end_src
 
 ** Optionally, run the gpu-burn CUDA stress test
@@ -91,7 +90,7 @@ Please read the documentation at http://wili.cc/blog/gpu-burn.html, before you c
 #+begin_src shell
   git clone https://github.com/wilicc/gpu-burn.git
   cd gpu-burn
-  make image
+  CUDA_IMAGE=12.1.0 make image
 
   # Run the default stress test as packages in the image
   docker run --rm --gpus all gpu-burn

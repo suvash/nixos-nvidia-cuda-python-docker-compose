@@ -4,11 +4,10 @@ services:
     build:
       context: .
     command: /opt/bin/run.sh lab
-    shm_size: '2gb'
+    shm_size: '4gb'
     volumes:
       - ./app:/app
       - ~/.cache/huggingface:/cache/huggingface
-      - ~/.cache/fastai:/cache/fastai
     ports:
       - "8989:8989"
     environment:
@@ -16,7 +15,6 @@ services:
       - HOST_GROUP_ID
       - CACHE_DIR=/cache
       - HF_HOME=/cache/huggingface
-      - FASTAI_HOME=/cache/fastai
     deploy:
       resources:
         reservations:

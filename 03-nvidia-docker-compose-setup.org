@@ -8,7 +8,7 @@ Check the version before you proceed.
 
 #+begin_src sh
   > docker-compose --version
-  docker-compose version 1.29.2 ............
+  Docker Compose version 2.23.1
 #+end_src
 
 
@@ -17,7 +17,7 @@ Check the version before you proceed.
 #+begin_src yaml :tangle ./03-files/docker-compose.yml
   services:
     test:
-      image: nvidia/cuda:11.6.2-base-ubuntu20.04
+      image: nvidia/cuda:12.1.0-base-ubuntu22.04
       command: nvidia-smi
       deploy:
         resources:
@@ -31,35 +31,37 @@ Test the docker-compose against the above service specification.
 
 
 #+begin_src shell
-  > docker-compose up
-  Creating network "compose-gpu_default" with the default driver
-  Creating compose-gpu_test_1 ... done
-  Attaching to compose-gpu_test_1
-  test_1  | Wed Apr 13 18:50:02 2022
-  test_1  | +-----------------------------------------------------------------------------+
-  test_1  | | NVIDIA-SMI 510.60.02    Driver Version: 510.60.02    CUDA Version: 11.6     |
-  test_1  | |-------------------------------+----------------------+----------------------+
-  test_1  | | GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
-  test_1  | | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
-  test_1  | |                               |                      |               MIG M. |
-  test_1  | |===============================+======================+======================|
-  test_1  | |   0  NVIDIA GeForce ...  Off  | 00000000:01:00.0 Off |                  N/A |
-  test_1  | |  0%   44C    P8    30W / 370W |     54MiB / 24576MiB |      0%      Default |
-  test_1  | |                               |                      |                  N/A |
-  test_1  | +-------------------------------+----------------------+----------------------+
-  test_1  |
-  test_1  | +-----------------------------------------------------------------------------+
-  test_1  | | Processes:                                                                  |
-  test_1  | |  GPU   GI   CI        PID   Type   Process name                  GPU Memory |
-  test_1  | |        ID   ID                                                   Usage      |
-  test_1  | |=============================================================================|
-  test_1  | |    0   N/A  N/A      1280      G                                      52MiB |
-  test_1  | +-----------------------------------------------------------------------------+
-  compose-gpu_test_1 exited with code 0
+  ❯ docker-compose up
+  [+] Building 0.0s (0/0)
+  [+] Running 2/0
+   ✔ Network 03-files_default   Created
+   ✔ Container 03-files-test-1  Created
+  Attaching to test-1
+  test-1  | Fri Jan 19 00:50:37 2024
+  test-1  | +---------------------------------------------------------------------------------------+
+  test-1  | | NVIDIA-SMI 545.29.02              Driver Version: 545.29.02    CUDA Version: 12.3     |
+  test-1  | |-----------------------------------------+----------------------+----------------------+
+  test-1  | | GPU  Name                 Persistence-M | Bus-Id        Disp.A | Volatile Uncorr. ECC |
+  test-1  | | Fan  Temp   Perf          Pwr:Usage/Cap |         Memory-Usage | GPU-Util  Compute M. |
+  test-1  | |                                         |                      |               MIG M. |
+  test-1  | |=========================================+======================+======================|
+  test-1  | |   0  NVIDIA GeForce RTX 3090        Off | 00000000:01:00.0  On |                  N/A |
+  test-1  | |  0%   49C    P8              41W / 370W |    465MiB / 24576MiB |     14%      Default |
+  test-1  | |                                         |                      |                  N/A |
+  test-1  | +-----------------------------------------+----------------------+----------------------+
+  test-1  |
+  test-1  | +---------------------------------------------------------------------------------------+
+  test-1  | | Processes:                                                                            |
+  test-1  | |  GPU   GI   CI        PID   Type   Process name                            GPU Memory |
+  test-1  | |        ID   ID                                                             Usage      |
+  test-1  | |=======================================================================================|
+  test-1  | +---------------------------------------------------------------------------------------+
+  test-1 exited with code 0
 
   > docker-compose down
-  Removing compose-gpu_test_1 ... done
-  Removing network compose-gpu_default
+  [+] Running 2/2
+   ✔ Container 03-files-test-1  Removed
+   ✔ Network 03-files_default   Removed
 #+end_src
 
 
