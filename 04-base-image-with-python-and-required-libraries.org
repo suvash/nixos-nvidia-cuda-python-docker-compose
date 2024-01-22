@@ -106,6 +106,7 @@ The Dockerfile will be comprised of :
                  gosu \
       ## libraries
                  libvips \
+                 ffmpeg \
       && apt-get clean \
       && apt-get autoremove --yes \
       && rm -rf /var/lib/apt/lists/* \
@@ -145,6 +146,14 @@ The Dockerfile will be comprised of :
       && sg "$CONDA_GROUP" -c "conda env create -f /tmp/$CONDA_ENV/environment.yml" \
       && echo "conda activate $CONDA_ENV" >> "$HOME/.bashrc"
 
+  COPY ./base.requirements.txt "/tmp/$CONDA_ENV/base.requirements.txt"
+  RUN set -exu \
+      \
+      && . "$CONDA_DIR/etc/profile.d/conda.sh" \
+      && conda activate "$CONDA_ENV" \
+      && sg "$CONDA_GROUP" -c "pip install --no-cache-dir \
+                                           -r /tmp/$CONDA_ENV/base.requirements.txt"
+
   COPY ./pytorch.requirements.txt "/tmp/$CONDA_ENV/pytorch.requirements.txt"
   RUN set -exu \
       \
@@ -153,6 +162,22 @@ The Dockerfile will be comprised of :
       && sg "$CONDA_GROUP" -c "pip install --no-cache-dir \
                                            -r /tmp/$CONDA_ENV/pytorch.requirements.txt \
                                            -f https://download.pytorch.org/whl/torch_stable.html"
+
+  COPY ./flash-attn.requirements.txt "/tmp/$CONDA_ENV/flash-attn.requirements.txt"
+  RUN set -exu \
+      \
+      && apt-get update \
+      && apt-get install --yes --no-install-recommends git \
+      \
+      && . "$CONDA_DIR/etc/profile.d/conda.sh" \
+      && conda activate "$CONDA_ENV" \
+      && sg "$CONDA_GROUP" -c "pip install --no-cache-dir \
+                                           -r /tmp/$CONDA_ENV/flash-attn.requirements.txt" \
+      \
+      && apt-get remove --yes git \
+      && apt-get clean \
+      && apt-get autoremove --yes \
+      && rm -rf /var/lib/apt/lists/*
 
   WORKDIR "$WORKDIR"
 #+end_src
@@ -169,10 +194,24 @@ The Dockerfile will be comprised of :
     - python=3.11.7
 #+end_src
 
+****  base.requirements.txt
+
+#+begin_src text :tangle ./04-files/deeplibs/py3.11-cuda12.1-ubuntu22.04/base.requirements.txt
+  # pre-required by flash-attn installation
+  packaging==23.2
+  ninja==1.11.1.1
+#+end_src
+
 ****  pytorch.requirements.txt
 
 #+begin_src text :tangle ./04-files/deeplibs/py3.11-cuda12.1-ubuntu22.04/pytorch.requirements.txt
   torch==2.1.2+cu121
   torchaudio==2.1.2+cu121
   torchvision==0.16.2+cu121
+#+end_src
+
+****  flash-attn.requirements.txt
+
+#+begin_src text :tangle ./04-files/deeplibs/py3.11-cuda12.1-ubuntu22.04/flash-attn.requirements.txt
+  flash-attn==2.4.2
 #+end_src
