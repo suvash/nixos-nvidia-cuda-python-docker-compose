@@ -18,6 +18,17 @@ Having the GPU configuration in a separate file makes it easy to include in the 
 
   {
     services.xserver.videoDrivers = [ "nvidia" ];
+
+    # If you have GPUs from multiple providers (such as Intel)
+    # services.xserver.videoDrivers = [ "intel" "nvidia" ];
+
+    # Also enable OpenGL
+    hardware.opengl = {
+      enable = true;
+      driSupport = true;
+      driSupport32Bit = true;
+    };
+
   }
 #+end_src
 
