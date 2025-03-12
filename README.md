@@ -1,13 +1,13 @@
 # Docker+Compose with CUDA (Nvidia container toolkit) + Jupyter & Python DL libraries on NixOS guide
 
-> Guide updated to : CUDA 12.3 (NixOS host) | CUDA 12.1 (docker container) | Python 3.11 | PyTorch 2.1.2
+> Guide updated to : CUDA 12.7 (NixOS host) | CUDA 12.6.3 (docker container) | Python 3.11.11 | PyTorch 2.6.0
 
 This repository includes a step-by-step guide for :
-- running deep learning libraries(such as pytorch 2.1, vllm on jupyterlab)
+- running deep learning libraries(such as pytorch 2.1)
 - in docker containers
 - via docker-compose
-- with full CUDA support (container Cuda version: 12.1)
-- on NixOS hosts (Cuda Version: 12.3)
+- with full CUDA support (container Cuda version: 12.6)
+- on NixOS hosts (Cuda Version: 12.7)
 
 The primary target of the usage guide is for setting up deep learning projects on NixOS systems with Nvidia GPUs.
 
