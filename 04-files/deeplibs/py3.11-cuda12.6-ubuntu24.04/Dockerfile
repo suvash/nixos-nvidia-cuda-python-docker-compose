@@ -13,6 +13,7 @@ RUN set -exu \
                curl \
                jq \
                gosu \
+               git \
     ## libraries
                libvips \
                ffmpeg \

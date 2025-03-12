@@ -104,6 +104,7 @@ The Dockerfile will be comprised of :
                  curl \
                  jq \
                  gosu \
+                 git \
       ## libraries
                  libvips \
                  ffmpeg \
