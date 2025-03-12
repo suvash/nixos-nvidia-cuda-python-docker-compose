@@ -27,7 +27,7 @@ Make a note of the image tag as it'll be needed in next step.
   make build
 
   # Test the image, get a terminal in the container and test cuda
-  docker run --rm --gpus all -it suvash/deeplibs:py3.11-cuda12.1-ubuntu22.04-<INSERT-SHA-HERE> /bin/bash
+  docker run --rm -it --device nvidia.com/gpu=all suvash/deeplibs:py3.11-cuda12.6-ubuntu24.04-<INSERT-SHA-HERE> /bin/bash
   python -c "import torch; print(torch.cuda.is_available())"
   exit
 
@@ -53,7 +53,7 @@ SHA_HEAD:=$(shell git rev-parse --short HEAD)
 DATE_NOW:=$(shell date +%Y-%m-%dT%H:%M:%S%z)
 
 DEEPLIBS_NAME:=deeplibs
-DEEPLIBS_TAG_PREFIX:=py3.11-cuda12.1-ubuntu22.04
+DEEPLIBS_TAG_PREFIX:=py3.11-cuda12.6-ubuntu24.04
 DEEPLIBS_FOLDER:=$(DEEPLIBS_NAME)/$(DEEPLIBS_TAG_PREFIX)
 DEEPLIBS_IMAGE:=$(IMAGE_PREFIX)/$(DEEPLIBS_NAME):$(DEEPLIBS_TAG_PREFIX)-$(SHA_HEAD)
 
@@ -88,8 +88,8 @@ The Dockerfile will be comprised of :
 
 **** Dockerfile
 
-#+begin_src text :tangle ./04-files/deeplibs/py3.11-cuda12.1-ubuntu22.04/Dockerfile
-  FROM nvidia/cuda:12.1.0-devel-ubuntu22.04
+#+begin_src text :tangle ./04-files/deeplibs/py3.11-cuda12.6-ubuntu24.04/Dockerfile
+  FROM nvidia/cuda:12.6.3-devel-ubuntu24.04
 
   ENV DEBIAN_FRONTEND=noninteractive \
       TZ=Europe/Stockholm
@@ -104,6 +104,7 @@ The Dockerfile will be comprised of :
                  curl \
                  jq \
                  gosu \
+                 git \
       ## libraries
                  libvips \
                  ffmpeg \
@@ -115,9 +116,9 @@ The Dockerfile will be comprised of :
   ARG WORKDIR="/workspace"
   ARG CONDA_DIR="/conda"
   ARG CONDA_GROUP="conda"
-  ARG CONDA_ENV="py311-cuda121"
-  ARG CONDA_VERSION="py311_23.11.0-2"
-  ARG CONDA_SHA256SUM="c9ae82568e9665b1105117b4b1e499607d2a920f0aea6f94410e417a0eff1b9c"
+  ARG CONDA_ENV="py311-cuda126"
+  ARG CONDA_VERSION="py311_25.1.1-2"
+  ARG CONDA_SHA256SUM="d8c1645776c0758214e4191c605abe5878002051316bd423f2b14b22d6cb4251"
 
 
   ENV CONDA_AUTO_UPDATE_CONDA=false \
@@ -146,14 +147,6 @@ The Dockerfile will be comprised of :
       && sg "$CONDA_GROUP" -c "conda env create -f /tmp/$CONDA_ENV/environment.yml" \
       && echo "conda activate $CONDA_ENV" >> "$HOME/.bashrc"
 
-  COPY ./base.requirements.txt "/tmp/$CONDA_ENV/base.requirements.txt"
-  RUN set -exu \
-      \
-      && . "$CONDA_DIR/etc/profile.d/conda.sh" \
-      && conda activate "$CONDA_ENV" \
-      && sg "$CONDA_GROUP" -c "pip install --no-cache-dir \
-                                           -r /tmp/$CONDA_ENV/base.requirements.txt"
-
   COPY ./pytorch.requirements.txt "/tmp/$CONDA_ENV/pytorch.requirements.txt"
   RUN set -exu \
       \
@@ -161,57 +154,27 @@ The Dockerfile will be comprised of :
       && conda activate "$CONDA_ENV" \
       && sg "$CONDA_GROUP" -c "pip install --no-cache-dir \
                                            -r /tmp/$CONDA_ENV/pytorch.requirements.txt \
-                                           -f https://download.pytorch.org/whl/torch_stable.html"
-
-  COPY ./flash-attn.requirements.txt "/tmp/$CONDA_ENV/flash-attn.requirements.txt"
-  RUN set -exu \
-      \
-      && apt-get update \
-      && apt-get install --yes --no-install-recommends git \
-      \
-      && . "$CONDA_DIR/etc/profile.d/conda.sh" \
-      && conda activate "$CONDA_ENV" \
-      && sg "$CONDA_GROUP" -c "pip install --no-cache-dir \
-                                           -r /tmp/$CONDA_ENV/flash-attn.requirements.txt" \
-      \
-      && apt-get remove --yes git \
-      && apt-get clean \
-      && apt-get autoremove --yes \
-      && rm -rf /var/lib/apt/lists/*
+                                           --index-url https://download.pytorch.org/whl/cu126"
 
   WORKDIR "$WORKDIR"
 #+end_src
 
 **** Conda environment.yml
 
-#+begin_src text :tangle ./04-files/deeplibs/py3.11-cuda12.1-ubuntu22.04/environment.yml
+#+begin_src text :tangle ./04-files/deeplibs/py3.11-cuda12.6-ubuntu24.04/environment.yml
   ---
   name: CONDA_ENV
   channels:
     - defaults
 
   dependencies:
-    - python=3.11.7
-#+end_src
-
-****  base.requirements.txt
-
-#+begin_src text :tangle ./04-files/deeplibs/py3.11-cuda12.1-ubuntu22.04/base.requirements.txt
-  # pre-required by flash-attn installation
-  packaging==23.2
-  ninja==1.11.1.1
+    - python=3.11.11
 #+end_src
 
 ****  pytorch.requirements.txt
 
-#+begin_src text :tangle ./04-files/deeplibs/py3.11-cuda12.1-ubuntu22.04/pytorch.requirements.txt
-  torch==2.1.2+cu121
-  torchaudio==2.1.2+cu121
-  torchvision==0.16.2+cu121
-#+end_src
-
-****  flash-attn.requirements.txt
-
-#+begin_src text :tangle ./04-files/deeplibs/py3.11-cuda12.1-ubuntu22.04/flash-attn.requirements.txt
-  flash-attn==2.4.2
+#+begin_src text :tangle ./04-files/deeplibs/py3.11-cuda12.6-ubuntu24.04/pytorch.requirements.txt
+  torch==2.6.0+cu126
+  torchaudio==2.6.0+cu126
+  torchvision==0.21.0+cu126
 #+end_src

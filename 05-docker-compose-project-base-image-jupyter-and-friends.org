@@ -44,6 +44,13 @@ The provided Makefile does a bunch of homekeeping and handles starting/stopping 
 
 ** Contents
 
+*** Readme
+
+#+begin_src makefile :tangle ./05-files/Readme.md
+  # Lab
+  Python 3.11.11 | CUDA 12.6.3 | PyTorch 2.6.0 | Jupyterlab
+#+end_src
+
 *** Makefile
 
 #+begin_src makefile :tangle ./05-files/Makefile
@@ -141,20 +148,22 @@ prune: ## Cleanup dangling/orphaned docker resources
       environment:
         - HOST_USER_ID
         - HOST_GROUP_ID
-        - CACHE_DIR=/cache
-        - HF_HOME=/cache/huggingface
+        - XDG_CACHE_HOME=/cache
       deploy:
         resources:
           reservations:
             devices:
-            - driver: nvidia
-              capabilities: [gpu]
+            - driver: cdi
+              capabilities:
+                - gpu
+              device_ids:
+                - nvidia.com/gpu=all
 #+end_src
 
 *** Dockerfile
 
 #+begin_src text :tangle ./05-files/Dockerfile
-  FROM suvash/deeplibs:py3.11-cuda12.1-ubuntu22.04-<CORRECT-SHA>
+  FROM suvash/deeplibs:py3.11-cuda12.6-ubuntu24.04-<CORRECT-SHA>
 
   ENV PATH="/opt/bin:$PATH" \
       APP_DIR="/app" \
@@ -187,13 +196,6 @@ prune: ## Cleanup dangling/orphaned docker resources
   # jupyter lab
   jupyterlab
   ipywidgets
-
-  # huggingface
-  transformers[sentencepiece]
-  datasets
-
-  # other
-  vllm
 #+end_src
 
 *** app/notebooks/.gitkeep

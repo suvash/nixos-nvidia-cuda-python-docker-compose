@@ -1,10 +1,13 @@
 services:
   test:
-    image: nvidia/cuda:12.1.0-base-ubuntu22.04
+    image: nvidia/cuda:12.6.3-base-ubuntu24.04
     command: nvidia-smi
     deploy:
       resources:
         reservations:
           devices:
-          - driver: nvidia
-            capabilities: [gpu]
+          - driver: cdi
+            capabilities:
+              - gpu
+            device_ids:
+              - nvidia.com/gpu=all

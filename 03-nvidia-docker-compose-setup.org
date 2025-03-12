@@ -1,14 +1,12 @@
 * 03. Setup Docker compose to make use of the NVIDIA gpu
 
-Please make sure that you've installed docker-compose before continuing.  As per the official documentation on gpu support, you'll have to install Docker Compose v1.28.0 or higher for the device structure specification in your compose files. Read more at https://docs.docker.com/compose/gpu-support/
-
 ** Install docker compose via your preferred method(configuration, home-manager etc.)
 
 Check the version before you proceed.
 
 #+begin_src sh
   > docker-compose --version
-  Docker Compose version 2.23.1
+  Docker Compose version 2.30.3
 #+end_src
 
 
@@ -17,51 +15,51 @@ Check the version before you proceed.
 #+begin_src yaml :tangle ./03-files/docker-compose.yml
   services:
     test:
-      image: nvidia/cuda:12.1.0-base-ubuntu22.04
+      image: nvidia/cuda:12.6.3-base-ubuntu24.04
       command: nvidia-smi
       deploy:
         resources:
           reservations:
             devices:
-            - driver: nvidia
-              capabilities: [gpu]
+            - driver: cdi
+              capabilities:
+                - gpu
+              device_ids:
+                - nvidia.com/gpu=all
 #+end_src
 
 Test the docker-compose against the above service specification.
 
 
 #+begin_src shell
-  ❯ docker-compose up
-  [+] Building 0.0s (0/0)
-  [+] Running 2/0
-   ✔ Network 03-files_default   Created
-   ✔ Container 03-files-test-1  Created
+  > docker-compose up
   Attaching to test-1
-  test-1  | Fri Jan 19 00:50:37 2024
-  test-1  | +---------------------------------------------------------------------------------------+
-  test-1  | | NVIDIA-SMI 545.29.02              Driver Version: 545.29.02    CUDA Version: 12.3     |
-  test-1  | |-----------------------------------------+----------------------+----------------------+
-  test-1  | | GPU  Name                 Persistence-M | Bus-Id        Disp.A | Volatile Uncorr. ECC |
-  test-1  | | Fan  Temp   Perf          Pwr:Usage/Cap |         Memory-Usage | GPU-Util  Compute M. |
-  test-1  | |                                         |                      |               MIG M. |
-  test-1  | |=========================================+======================+======================|
-  test-1  | |   0  NVIDIA GeForce RTX 3090        Off | 00000000:01:00.0  On |                  N/A |
-  test-1  | |  0%   49C    P8              41W / 370W |    465MiB / 24576MiB |     14%      Default |
-  test-1  | |                                         |                      |                  N/A |
-  test-1  | +-----------------------------------------+----------------------+----------------------+
+  test-1  | Wed Mar 12 15:03:41 2025
+  test-1  | +-----------------------------------------------------------------------------------------+
+  test-1  | | NVIDIA-SMI 565.77                 Driver Version: 565.77         CUDA Version: 12.7     |
+  test-1  | |-----------------------------------------+------------------------+----------------------+
+  test-1  | | GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+  test-1  | | Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+  test-1  | |                                         |                        |               MIG M. |
+  test-1  | |=========================================+========================+======================|
+  test-1  | |   0  NVIDIA GeForce RTX 3090        Off |   00000000:01:00.0 Off |                  N/A |
+  test-1  | |  0%   45C    P8             24W /  370W |      15MiB /  24576MiB |      0%      Default |
+  test-1  | |                                         |                        |                  N/A |
+  test-1  | +-----------------------------------------+------------------------+----------------------+
+  test-1  | |   1  NVIDIA GeForce RTX 3090        Off |   00000000:02:00.0  On |                  N/A |
+  test-1  | |  0%   50C    P8             40W /  370W |     839MiB /  24576MiB |     18%      Default |
+  test-1  | |                                         |                        |                  N/A |
+  test-1  | +-----------------------------------------+------------------------+----------------------+
   test-1  |
-  test-1  | +---------------------------------------------------------------------------------------+
-  test-1  | | Processes:                                                                            |
-  test-1  | |  GPU   GI   CI        PID   Type   Process name                            GPU Memory |
-  test-1  | |        ID   ID                                                             Usage      |
-  test-1  | |=======================================================================================|
-  test-1  | +---------------------------------------------------------------------------------------+
+  test-1  | +-----------------------------------------------------------------------------------------+
+  test-1  | | Processes:                                                                              |
+  test-1  | |  GPU   GI   CI        PID   Type   Process name                              GPU Memory |
+  test-1  | |        ID   ID                                                               Usage      |
+  test-1  | |=========================================================================================|
+  test-1  | +-----------------------------------------------------------------------------------------+
   test-1 exited with code 0
 
   > docker-compose down
-  [+] Running 2/2
-   ✔ Container 03-files-test-1  Removed
-   ✔ Network 03-files_default   Removed
 #+end_src
 
 
