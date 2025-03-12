@@ -6,6 +6,8 @@
 
     .
     .
+    # nvidia gpu
+    ./nvidia_gpu.nix
 
     # virtualisation
     ./docker.nix
